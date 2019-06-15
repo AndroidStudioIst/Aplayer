@@ -1,5 +1,3 @@
-# MyAplayer
-
 # Aplayer
 基于迅雷Aplayer封装
 
@@ -39,8 +37,8 @@ protected void onActivityResult(int requestCode, int resultCode, @Nullable Inten
 -keep class com.aplayer.** {*;}
 ```
 
-![演示图片](https://raw.githubusercontent.com/W252016021/Aplayer/master/Screenshot_20190615-182732.jpg "演示图片")
-![演示图片](https://raw.githubusercontent.com/W252016021/Aplayer/master/Screenshot_20190615-182748.jpg "演示图片")
-![演示图片](https://raw.githubusercontent.com/W252016021/Aplayer/master/Screenshot_20190615-182752.jpg "演示图片")
+![演示图片](https://raw.githubusercontent.com/W252016021/MyAplayer/master/ScreenShots/Screenshot_20190615-182732.jpg "演示图片")
+![演示图片](https://raw.githubusercontent.com/W252016021/MyAplayer/master/ScreenShots/Screenshot_20190615-182748.jpg "演示图片")
+![演示图片](https://raw.githubusercontent.com/W252016021/MyAplayer/master/ScreenShots/Screenshot_20190615-182752.jpg "演示图片")
 
 
