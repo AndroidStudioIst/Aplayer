@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context="com.test.player.AplayerActivity">
+
+    <SurfaceView
+        android:id="@+id/holderView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:keepScreenOn="true"
+        android:textColor="#33b5e5"
+        android:textSize="@dimen/sp_48"
+        android:textStyle="bold" />
+
+    <android.widget.ImageView
+        android:id="@+id/v_play_thumb"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop" />
+
+    <LinearLayout
+        android:id="@+id/header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:background="@drawable/v_playbar_top"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <android.widget.ImageView
+            android:id="@+id/v_back"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/v_playbar_back"
+            android:tint="@android:color/white" />
+
+        <TextView
+            android:id="@+id/v_title"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:gravity="start|center"
+            android:maxLines="1"
+            android:paddingTop="@dimen/dp_5"
+            android:paddingRight="@dimen/dp_5"
+            android:paddingBottom="@dimen/dp_5"
+            android:text="REMINIS MINI PLAYER"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/sp_15" />
+
+        <android.widget.ImageView
+            android:id="@+id/v_set"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/v_play_settings"
+            android:tint="@android:color/white"
+            android:visibility="gone" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/dp_50"
+            android:adjustViewBounds="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/bd_speed_rate_1_0"
+            android:visibility="gone"/>
+
+        <TextClock
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:format12Hour="hh:mm"
+            android:format24Hour="HH:mm"
+            android:gravity="center"
+            android:shadowColor="#000"
+            android:shadowDx="0.5"
+            android:shadowDy="0.5"
+            android:shadowRadius="2"
+            android:text="08:09:16"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/sp_14"
+            android:textStyle="normal" />
+
+        <FrameLayout
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50">
+
+            <LinearLayout
+                android:layout_width="@dimen/dp_24"
+                android:layout_height="@dimen/dp_13"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/dp_1">
+
+                <TextView
+                    android:id="@+id/dianliang"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="9900" />
+
+                <TextView
+                    android:id="@+id/dianliang2"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:layout_weight="100"
+                    android:background="#ffffff" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/dianliang3"
+                android:layout_width="@dimen/dp_24"
+                android:layout_height="@dimen/dp_13"
+                android:layout_gravity="center"
+                android:background="@drawable/play_ctrl_battery"
+                android:orientation="horizontal"
+                android:paddingLeft="@dimen/dp_1" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <include
+        layout="@layout/item_preparing"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        tools:visibility="visible" />
+
+    <LinearLayout
+        android:id="@+id/ctrl_bar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50"
+        android:layout_gravity="bottom"
+        android:background="@drawable/v_palybar_bottom"
+        android:orientation="horizontal">
+
+        <android.widget.ImageView
+            android:id="@+id/v_play"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:clickable="true"
+            android:focusable="true"
+
+            android:scaleType="centerInside"
+            android:src="@drawable/v_play_arrow"
+            android:tint="@android:color/white" />
+
+        <TextView
+            android:id="@+id/tv_position"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingLeft="@dimen/dp_10"
+            android:paddingRight="@dimen/dp_10"
+            android:text="00:00"
+            android:textColor="@android:color/white"
+            android:textSize="14sp" />
+
+        <SeekBar
+            android:id="@+id/seekbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:maxHeight="@dimen/dp_3"
+            android:minHeight="@dimen/dp_3"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:progressDrawable="@drawable/bd_seekbar_holo_light"
+            android:thumb="@drawable/v_thumb"
+            android:thumbOffset="0dip" />
+
+        <TextView
+            android:id="@+id/tv_duration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="end|center"
+            android:paddingLeft="@dimen/dp_10"
+            android:paddingRight="@dimen/dp_10"
+            android:singleLine="true"
+            android:text="00:00"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/sp_14" />
+
+        <android.widget.ImageView
+            android:id="@+id/v_rotate"
+            android:layout_width="@dimen/dp_50"
+            android:layout_height="@dimen/dp_50"
+            android:clickable="true"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/v_screen_full"
+            android:tint="@android:color/white" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+
+        android:shadowColor="#000"
+        android:shadowDx="0.5"
+        android:shadowDy="0.5"
+        android:shadowRadius="2"
+        android:text="音量:50%"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/sp_20"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <android.widget.ImageView
+        android:id="@+id/v_play_large"
+        android:layout_width="@dimen/dp_60"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:adjustViewBounds="true"
+        android:alpha="0.7"
+        android:background="@null"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/v_play_large"
+        android:tint="@android:color/white"
+        tools:visibility="gone" />
+
+
+    <android.widget.ImageView
+        android:id="@+id/v_player_lock"
+        android:layout_width="@dimen/dp_50"
+        android:layout_height="@dimen/dp_50"
+        android:layout_gravity="start|center"
+        android:layout_marginLeft="@dimen/dp_10"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/v_player_unlocked"
+        android:tint="@android:color/white" />
+
+</FrameLayout>
