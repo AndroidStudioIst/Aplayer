@@ -751,5 +751,12 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         return (false);
     }
 
-
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        this.width = displayMetrics.widthPixels;
+        this.height = displayMetrics.heightPixels;
+    }
 }
