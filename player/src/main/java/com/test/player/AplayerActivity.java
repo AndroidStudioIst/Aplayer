@@ -94,7 +94,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         initAplayer();
         hideBottomUIMenu();
-        initBatteryReceiver();
+        /*initBatteryReceiver();*/
         Intent intent = getIntent();
         resultCode = getIntent().getIntExtra("resultCode", -1);
         v_title.setText(intent.getStringExtra("title"));
@@ -632,9 +632,9 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    private BatteryReceiver batteryReceiver;
+/*    private BatteryReceiver batteryReceiver;*/
 
-    private TextView dianliangTextView;
+ /*   private TextView dianliangTextView;
     private TextView dianliangTextView2;
     private LinearLayout dianliangTextView3;
 
@@ -693,7 +693,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         return ((float) ((100.0d - (100.0d * d)) / d));
     }
 
-
+*/
     /**
      * 隐藏虚拟按键，并且全屏
      */
@@ -741,9 +741,9 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void finishPlay(){
-        if (batteryReceiver != null) {
+        /*if (batteryReceiver != null) {
             unregisterReceiver(batteryReceiver);
-        }
+        }*/
         if (url != null) {
             if (!isLive) {
                 com.test.player.PlayerDataBaseHelper.addPlayerInfo(url, aPlayer.getPosition());
