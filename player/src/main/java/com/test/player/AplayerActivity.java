@@ -85,6 +85,8 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
 
     private int resultCode = -1;
 
+    private boolean showToast = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +100,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         v_title.setText(intent.getStringExtra("title"));
         url = intent.getStringExtra("url");
         isLive = intent.getBooleanExtra("isLive", false);
+        showToast = intent.getBooleanExtra("showToast", false);
         aPlayer.open(url);
         Log.e("info", "url:" + url);
         com.test.player.PlayerDataBaseHelper.openDataBase(this);
@@ -172,28 +175,40 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                             com.test.player.PlayerDataBaseHelper.deleteInfo(url);
                         }
                         url = null;
-                        finish();
+                        finishPlay();
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CLOSE:
-                        finish();
+                        finishPlay();
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_OPENRROR:
-                        Toast.makeText(AplayerActivity.this, "文件打开失败!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "文件打开失败!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_DECODEERROR:
-                        Toast.makeText(AplayerActivity.this, "文件解码失败!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "文件解码失败!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_HARDDECODERROR:
-                        Toast.makeText(AplayerActivity.this, "硬件解码失败!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "硬件解码失败!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_SEEKERROR:
-                        Toast.makeText(AplayerActivity.this, "文件Seek失败!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "文件Seek失败!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_READEFRAMERROR:
-                        Toast.makeText(AplayerActivity.this, "读取内存失败!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "读取内存失败!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                     case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CREATEGRAPHERROR:
-                        Toast.makeText(AplayerActivity.this, "Creat Graph Error!", Toast.LENGTH_LONG).show();
+                        if (showToast) {
+                            Toast.makeText(AplayerActivity.this, "Create GRAPH Error!", Toast.LENGTH_LONG).show();
+                        }
                         break;
                 }
             }
@@ -303,7 +318,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
             Log.e("info", speed);
             /* iPlaySpeed 是50-200，原速度是100。 */
         } else if (v.getId() == R.id.v_back) {
-            finish();
+            finishPlay();
         } else if (v.getId() == R.id.v_rotate) {
             Configuration mConfiguration = this.getResources().getConfiguration();               /* 获取设置的配置信息 */
             int ori = mConfiguration.orientation;                           /* 获取屏幕方向 */
@@ -725,9 +740,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         super.onStop();
     }
 
-
-    @Override
-    protected void onDestroy() {
+    private void finishPlay(){
         if (batteryReceiver != null) {
             unregisterReceiver(batteryReceiver);
         }
@@ -739,11 +752,8 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         aPlayer.close();
         aPlayer.destroy();
         setResult(38438);
-
-        super.onDestroy();
+        finish();
     }
-
-
     private boolean isPlay(int status) {
         if (APlayerAndroid.PlayerState.APLAYER_PLAY == status || APlayerAndroid.PlayerState.APLAYER_PLAYING == status) {
             return (true);

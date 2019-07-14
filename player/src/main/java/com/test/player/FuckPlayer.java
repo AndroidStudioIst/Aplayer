@@ -10,6 +10,8 @@ public class FuckPlayer {
     private boolean isLive = false;
     private int resquestCode = -1;
 
+    private boolean showToast = false;
+
     public FuckPlayer(Activity activity) {
         this.activity = activity;
     }
@@ -34,12 +36,17 @@ public class FuckPlayer {
         return this;
     }
 
+    public FuckPlayer setShowToast(boolean showToast) {
+        this.showToast = showToast;
+        return this;
+    }
 
     public void start() {
         Intent intent = new Intent(activity, AplayerActivity.class);
         intent.putExtra("title", title);
         intent.putExtra("url", url);
         intent.putExtra("isLive", isLive);
+        intent.putExtra("showToast", showToast);
         if (resquestCode == -1) {
             activity.startActivity(intent);
         } else {
