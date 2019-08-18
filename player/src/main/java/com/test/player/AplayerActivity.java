@@ -1,19 +1,14 @@
 package com.test.player;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -58,24 +53,22 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     private boolean mIsTouchingSeekbar = false;        /* 标志位,是否在滑动进度 */
 
     private boolean mIsSystemCallPause = false;
-    private ProgressBar cachingProgressBar = null;
     private TextView cachingProgressHint = null;
 
-    private int zongshichang;
-    private int dangqianshichang;
-    private int dangqianshituodong;
-    private float anxiazuobiaox;
-    private float anxiazuobiaoy;
-    private float huadongzongzuobiao;
-    private int dangqianliangdu;
+    private int totalPosition;
+    private int currentPosition;
+    private int currentMovePosition;
+    private float pressedX;
+    private float pressedY;
+    private float movedY;
+    private int currentBrightness;
     private int currentVolume;
-    private int dangqianyinliang;
-    private int dangqianliandu;
-    private int anxiayinliang;
-    private int zuidayinliang;
-    private int dongzuo;
+    private int pressedBrightness;
+    private int pressedVolume;
+    private int maxVolume;
+    private int action;
     private AudioManager audioManager;
-    private boolean suoding = false;
+    private boolean locker = false;
     private int width;
     private int height;
 
@@ -91,10 +84,10 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_aplayer);
+        PlayerDataBaseHelper.openDataBase(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         initAplayer();
         hideBottomUIMenu();
-        /*initBatteryReceiver();*/
         Intent intent = getIntent();
         resultCode = getIntent().getIntExtra("resultCode", -1);
         v_title.setText(intent.getStringExtra("title"));
@@ -102,31 +95,25 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         isLive = intent.getBooleanExtra("isLive", false);
         showToast = intent.getBooleanExtra("showToast", false);
         aPlayer.open(url);
-        Log.e("info", "url:" + url);
-        com.test.player.PlayerDataBaseHelper.openDataBase(this);
     }
 
 
     private void initAplayer() {
-        if (null != aPlayer) {
-            return;
-        }
-        holderView = (SurfaceView) findViewById(R.id.holderView);
-        header_bar = (LinearLayout) findViewById(R.id.header_bar);
-        ctrl_bar = (LinearLayout) findViewById(R.id.ctrl_bar);
-        caching = (LinearLayout) findViewById(R.id.caching);
-        play = (ImageView) findViewById(R.id.v_play);
-        play_large = (ImageView) findViewById(R.id.v_play_large);
+        holderView = findViewById(R.id.holderView);
+        header_bar = findViewById(R.id.header_bar);
+        ctrl_bar = findViewById(R.id.ctrl_bar);
+        caching = findViewById(R.id.caching);
+        play = findViewById(R.id.v_play);
+        play_large = findViewById(R.id.v_play_large);
         play_large.setOnClickListener(this);
         play.setOnClickListener(this);
         findViewById(R.id.v_back).setOnClickListener(this);
-        findViewById(R.id.v_set).setOnClickListener(this);
-        ratate = (ImageView) findViewById(R.id.v_rotate);
+        ratate = findViewById(R.id.v_rotate);
         ratate.setOnClickListener(this);
-        lock = (ImageView) findViewById(R.id.v_player_lock);
+        lock = findViewById(R.id.v_player_lock);
         lock.setOnClickListener(this);
-        cachingProgressBar = (ProgressBar) findViewById(R.id.loading);
-        cachingProgressHint = (TextView) findViewById(R.id.loading_text);
+        ProgressBar cachingProgressBar = findViewById(R.id.loading);
+        cachingProgressHint = findViewById(R.id.loading_text);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         this.width = displayMetrics.widthPixels;
@@ -135,8 +122,8 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         this.audioManager = ((AudioManager) getSystemService(AUDIO_SERVICE));
         if (audioManager != null) {
             int j = this.audioManager.getStreamMaxVolume(3);
-            this.zuidayinliang = j;
-            this.zuidayinliang *= 6;
+            this.maxVolume = j;
+            this.maxVolume *= 6;
         }
         float f = this.currentVolume * 6;
         try {
@@ -145,130 +132,117 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         } catch (Settings.SettingNotFoundException localSettingNotFoundException) {
             localSettingNotFoundException.printStackTrace();
         }
-        this.dangqianliangdu = ((int) (f * 100.0F));
-        this.dangqianliandu = ((int) (f * 100.0F));
+        this.currentBrightness = ((int) (f * 100.0F));
+        this.pressedBrightness = ((int) (f * 100.0F));
 
-        seekBar = (SeekBar) findViewById(R.id.seekbar);
-        tv_position = (TextView) findViewById(R.id.tv_position);
-        tv_duration = (TextView) findViewById(R.id.tv_duration);
-        tv_info = (TextView) findViewById(R.id.tv_info);
-        v_title = (TextView) findViewById(R.id.v_title);
+        seekBar = findViewById(R.id.seekbar);
+        tv_position = findViewById(R.id.tv_position);
+        tv_duration = findViewById(R.id.tv_duration);
+        tv_info = findViewById(R.id.tv_info);
+        v_title = findViewById(R.id.v_title);
         aPlayer = new APlayerAndroid();
         aPlayer.setView(holderView);
-        aPlayer.setOnOpenCompleteListener(new APlayerAndroid.OnOpenCompleteListener() {
-            @Override
-            public void onOpenComplete(boolean b) {
-                if (b) {
-                    aPlayer.play();
-                } else {
+        aPlayer.setOnOpenCompleteListener(b -> {
+            if (b) {
+                aPlayer.play();
+            } else {
+                caching.setVisibility(GONE);
+            }
+        });
+        aPlayer.setOnPlayCompleteListener(s -> {
+            switch (s) {
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_COMPLETE:
+                    if (!isLive) {
+                        PlayerDataBaseHelper.deleteInfo(url);
+                    }
+                    url = null;
+                    finishPlay();
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CLOSE:
+                    finishPlay();
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_OPENRROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "文件打开失败!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_DECODEERROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "文件解码失败!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_HARDDECODERROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "硬件解码失败!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_SEEKERROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "文件Seek失败!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_READEFRAMERROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "读取内存失败!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+                case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CREATEGRAPHERROR:
+                    if (showToast) {
+                        Toast.makeText(AplayerActivity.this, "Create GRAPH Error!", Toast.LENGTH_LONG).show();
+                    }
+                    break;
+            }
+        });
+        aPlayer.setOnBufferListener(i -> {
+            Log.e("info", "onBuffer:" + i);
+            int visibility = (i == 100) ? View.INVISIBLE : VISIBLE;
+            caching.setVisibility(visibility);
+            String strProgress = "缓冲: " + i + "%";
+            cachingProgressHint.setText(strProgress);
+        });
+        aPlayer.setOnPlayStateChangeListener((i, i1) -> {
+            switch (i) {
+                case APlayerAndroid.PlayerState.APLAYER_CLOSEING:
+                    caching.setVisibility(VISIBLE);
+                    cachingProgressHint.setText("正在关闭...");
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_OPENING:
+                    caching.setVisibility(VISIBLE);
+                    cachingProgressHint.setText("正在打开视频...");
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_PAUSED:
                     caching.setVisibility(GONE);
-                }
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_PAUSING:
+                    caching.setVisibility(VISIBLE);
+                    cachingProgressHint.setText("正在暂停...");
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_PLAY:
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_READ:
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_RESET:
+                    break;
+                case APlayerAndroid.PlayerState.APLAYER_PLAYING:
+                    if (!isLive) {
+                        int position = PlayerDataBaseHelper.getPosition(url);
+                        if (position > 0) {
+                            aPlayer.setPosition(position);
+                        }
+                    }
+                    caching.setVisibility(GONE);
+                    break;
             }
-        });
-        aPlayer.setOnPlayCompleteListener(new APlayerAndroid.OnPlayCompleteListener() {
-            @Override
-            public void onPlayComplete(String s) {
-                Log.e("info", "onPlayComplete:" + s);
-                switch (s) {
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_COMPLETE:
-                        if (!isLive) {
-                            com.test.player.PlayerDataBaseHelper.deleteInfo(url);
-                        }
-                        url = null;
-                        finishPlay();
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CLOSE:
-                        finishPlay();
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_OPENRROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "文件打开失败!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_DECODEERROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "文件解码失败!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_HARDDECODERROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "硬件解码失败!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_SEEKERROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "文件Seek失败!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_READEFRAMERROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "读取内存失败!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                    case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_CREATEGRAPHERROR:
-                        if (showToast) {
-                            Toast.makeText(AplayerActivity.this, "Create GRAPH Error!", Toast.LENGTH_LONG).show();
-                        }
-                        break;
-                }
+            if (i == APlayerAndroid.PlayerState.APLAYER_PLAYING) {
+                play_large.setVisibility(GONE);
+                play.setImageResource(R.drawable.v_play_pause);
+                startUIUpdateThread();
+            } else {
+                play_large.setVisibility(GONE);
+                play.setImageResource(R.drawable.v_play_arrow);
+                stopUIUpdateThread();
             }
-        });
-        aPlayer.setOnBufferListener(new APlayerAndroid.OnBufferListener() {
-            @Override
-            public void onBuffer(int i) {
-                Log.e("info", "onBuffer:" + i);
-                int visibility = (i == 100) ? View.INVISIBLE : VISIBLE;
-                caching.setVisibility(visibility);
-                String strProgress = "缓冲: " + i + "%";
-                cachingProgressHint.setText(strProgress);
-            }
-        });
-        aPlayer.setOnPlayStateChangeListener(new APlayerAndroid.OnPlayStateChangeListener() {
-            @Override
-            public void onPlayStateChange(int i, int i1) {
-                switch (i) {
-                    case APlayerAndroid.PlayerState.APLAYER_CLOSEING:
-                        caching.setVisibility(VISIBLE);
-                        cachingProgressHint.setText("正在关闭...");
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_OPENING:
-                        caching.setVisibility(VISIBLE);
-                        cachingProgressHint.setText("正在打开视频...");
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_PAUSED:
-                        caching.setVisibility(GONE);
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_PAUSING:
-                        caching.setVisibility(VISIBLE);
-                        cachingProgressHint.setText("正在暂停...");
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_PLAY:
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_READ:
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_RESET:
-                        break;
-                    case APlayerAndroid.PlayerState.APLAYER_PLAYING:
-                        if (!isLive) {
-                            int position = com.test.player.PlayerDataBaseHelper.getPosition(url);
-                            if (position > 0) {
-                                aPlayer.setPosition(position);
-                            }
-                        }
-                        caching.setVisibility(GONE);
-                        break;
-                }
-                if (i == APlayerAndroid.PlayerState.APLAYER_PLAYING) {
-                    play_large.setVisibility(GONE);
-                    play.setImageResource(R.drawable.v_play_pause);
-                    startUIUpdateThread();
-                } else {
-                    play_large.setVisibility(GONE);
-                    play.setImageResource(R.drawable.v_play_arrow);
-                    stopUIUpdateThread();
-                }
-                Log.e("info", "preState:" + i1 + " >> State:" + i);
-            }
+            Log.e("info", "preState:" + i1 + " >> State:" + i);
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -309,34 +283,26 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                     aPlayer.play();
                 }
             }
-        } else if (v.getId() == R.id.v_set) {
-            /*
-             * aPlayer.setConfig(APlayerAndroid.CONFIGID.PLAY_SPEED, Integer.toString(200));
-             * showSetPopMenu(v);
-             */
-            String speed = aPlayer.getConfig(APlayerAndroid.CONFIGID.AUDIO_TRACK_LIST);
-            Log.e("info", speed);
-            /* iPlaySpeed 是50-200，原速度是100。 */
         } else if (v.getId() == R.id.v_back) {
             finishPlay();
         } else if (v.getId() == R.id.v_rotate) {
             Configuration mConfiguration = this.getResources().getConfiguration();               /* 获取设置的配置信息 */
             int ori = mConfiguration.orientation;                           /* 获取屏幕方向 */
-            if (ori == mConfiguration.ORIENTATION_LANDSCAPE) {
+            if (ori == Configuration.ORIENTATION_LANDSCAPE) {
                 /* 横屏 */
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);            /* 强制为竖屏 */
-            } else if (ori == mConfiguration.ORIENTATION_PORTRAIT) {
+            } else if (ori == Configuration.ORIENTATION_PORTRAIT) {
                 /* 竖屏 */
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);    /* 强制为横屏 */
             }
         } else if (v.getId() == R.id.v_player_lock) {
-            if (!suoding) {
-                suoding = true;
+            if (!locker) {
+                locker = true;
                 hideCtrlBar();
                 lock.setImageResource(R.drawable.v_player_locked);
             } else {
                 lock.setImageResource(R.drawable.v_player_unlocked);
-                suoding = false;
+                locker = false;
                 showBars();
             }
         } else if (v.getId() == R.id.v_play_large) {
@@ -365,7 +331,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         WeakReference<AplayerActivity> mActivity;
 
         MyHandler(AplayerActivity activity) {
-            mActivity = new WeakReference<AplayerActivity>(activity);
+            mActivity = new WeakReference<>(activity);
         }
 
         @Override
@@ -374,7 +340,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
             if (msg.what == 1) {
                 activity.tv_duration.setText(updateTextViewWithTimeFormat(msg.arg2));
                 activity.tv_position.setText(updateTextViewWithTimeFormat(msg.arg1));
-                /* setTimeTextView(mTextViewDurationTime, durationTimeMs); */
                 if (msg.arg1 > 0 && msg.arg2 >= 0) {
                     activity.seekBar.setMax(msg.arg2);
                     activity.seekBar.setProgress(msg.arg1);
@@ -432,16 +397,17 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         int i2 = (i % 3600) / 60;
         int i3 = i % 60;
         if (i / 3600 != 0) {
-            return (String.format("%02d:%02d:%02d", new Object[]{Integer.valueOf(i / 3600), Integer.valueOf(i2), Integer.valueOf(i3)}));
+            String format = String.format("%02d:%02d:%02d", Integer.valueOf(i / 3600), Integer.valueOf(i2), Integer.valueOf(i3));
+            return format;
         }
-        return (String.format("%02d:%02d", new Object[]{Integer.valueOf(i2), Integer.valueOf(i3)}));
+        String format = String.format("%02d:%02d", Integer.valueOf(i2), Integer.valueOf(i3));
+        return format;
     }
 
 
     private boolean isOverSeekGate(int seekBarPositionMs, int currentPlayPosMs) {
         final int SEEK_MIN_GATE_MS = 1000;
-        boolean isChangeOverSeekGate = Math.abs(currentPlayPosMs - seekBarPositionMs) > SEEK_MIN_GATE_MS;
-        return (isChangeOverSeekGate);
+        return Math.abs(currentPlayPosMs - seekBarPositionMs) > SEEK_MIN_GATE_MS;
     }
 
 
@@ -455,7 +421,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         mIsTouchingSeekbar = true;
         stopUIUpdateThread();
         seekBar.setProgress(seekPostionMs);
-        tv_info.setText(updateTextViewWithTimeFormat(seekPostionMs) + "/" + updateTextViewWithTimeFormat(max));
+        tv_info.setText(String.format("%s/%s", updateTextViewWithTimeFormat(seekPostionMs), updateTextViewWithTimeFormat(max)));
         tv_info.setVisibility(VISIBLE);
         aPlayer.setPosition(seekPostionMs * 1000);
     }
@@ -468,104 +434,92 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         float f;
         switch (motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                this.zongshichang = this.aPlayer.getDuration() / 1000;
-                this.dangqianshichang = this.aPlayer.getPosition() / 1000;
-                this.anxiazuobiaox = x;
-                this.anxiazuobiaoy = y;
-                this.dongzuo = 1;
+                this.totalPosition = this.aPlayer.getDuration() / 1000;
+                this.currentPosition = this.aPlayer.getPosition() / 1000;
+                this.pressedX = x;
+                this.pressedY = y;
+                this.action = 1;
                 this.currentVolume = this.audioManager.getStreamVolume(3);
-                this.anxiayinliang = (this.currentVolume * 6);
-                f = 1.0F;
-                try {
-                    int i = Settings.System.getInt(getContentResolver(), "screen_brightness");
-                    f = 1.0F * i / 255.0F;
-                } catch (Settings.SettingNotFoundException localSettingNotFoundException) {
-                    localSettingNotFoundException.printStackTrace();
-                }
-                this.huadongzongzuobiao = y;
+                this.pressedVolume = (this.currentVolume * 6);
+                this.movedY = y;
                 break;
             case MotionEvent.ACTION_UP:
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        tv_info.setVisibility(GONE);
-                        switch (dongzuo) {
-                            case 2:
-                                if (!suoding) {
-                                    if (aPlayer.getDuration() <= 5) {
-                                        return;
-                                    }
-                                    aPlayer.setPosition(dangqianshituodong * 1000);
-                                    break;
-                                }
-                            case 3:
-                                dangqianliandu = dangqianliangdu;
-                                break;
-                            case 4:
-                                break;
-                            default:
-                                onClickEmptyArea();
-                                break;
-                        }
+                new Handler().postDelayed(() -> {
+                    tv_info.setVisibility(GONE);
+                    switch (action) {
+                        case 2:
+                            if (aPlayer.getDuration() > 5 && !locker) {
+                                aPlayer.setPosition(currentMovePosition * 1000);
+                            }
+                            break;
+                        case 3:
+                            pressedBrightness = currentBrightness;
+                            break;
+                        case 4:
+                            break;
+                        default:
+                            onClickEmptyArea();
+                            break;
                     }
                 }, 100L);
 
             case MotionEvent.ACTION_MOVE:
-                if (!suoding) {
-                    f = Math.abs(x - this.anxiazuobiaox);
-                    float abs = Math.abs(y - this.anxiazuobiaoy);
-                    if (this.dongzuo == 1) {
+                if (!locker) {
+                    f = Math.abs(x - this.pressedX);
+                    float abs = Math.abs(y - this.pressedY);
+                    if (this.action == 1) {
                         if (f > 50.0f && abs < 50.0f) {
-                            this.dongzuo = 2;
+                            this.action = 2;
                         }
-                        if (f < 50.0f && abs > 50.0f && ((double) this.anxiazuobiaox) < ((double) this.width) * 0.25d) {
-                            this.dongzuo = 3;
+                        if (f < 50.0f && abs > 50.0f && ((double) this.pressedX) < ((double) this.width) * 0.25d) {
+                            this.action = 3;
                         }
-                        if (f < 50.0f && abs > 50.0f && ((double) this.anxiazuobiaox) > ((double) this.width) * 0.75d) {
-                            this.dongzuo = 4;
+                        if (f < 50.0f && abs > 50.0f && ((double) this.pressedX) > ((double) this.width) * 0.75d) {
+                            this.action = 4;
                         }
                     }
-                    switch (this.dongzuo) {
+                    switch (this.action) {
                         case 2:
-                            this.dangqianshituodong = (int) ((float) ((((double) (((x - this.anxiazuobiaox) / ((float) this.width)) * ((float) this.zongshichang))) * 0.3d) + ((double) this.dangqianshichang)));
-                            if (this.dangqianshituodong < 0) {
-                                this.dangqianshituodong = 0;
+                            this.currentMovePosition = (int) ((float) ((((double) (((x - this.pressedX) / ((float) this.width)) * ((float) this.totalPosition))) * 0.3d) + ((double) this.currentPosition)));
+                            if (this.currentMovePosition < 0) {
+                                this.currentMovePosition = 0;
                             }
-                            if (this.dangqianshituodong > this.zongshichang) {
-                                this.dangqianshituodong = this.zongshichang;
+                            if (this.currentMovePosition > this.totalPosition) {
+                                this.currentMovePosition = this.totalPosition;
                             }
                             this.tv_info.setVisibility(VISIBLE);
-                            this.tv_info.setText(updateTextViewWithTimeFormat(this.dangqianshituodong) + "/" + updateTextViewWithTimeFormat(this.zongshichang));
+                            this.tv_info.setText(String.format("%s/%s", updateTextViewWithTimeFormat(this.currentMovePosition), updateTextViewWithTimeFormat(this.totalPosition)));
                             break;
                         case 3:
-                            float f6 = (y - this.huadongzongzuobiao) * 100.0F / this.height;
+                            float f6 = (y - this.movedY) * 100.0F / this.height;
 
-                            this.dangqianliangdu = (this.dangqianliandu - (int) f6);
-                            if (this.dangqianliangdu > 100) {
-                                this.dangqianliangdu = 100;
+                            this.currentBrightness = (this.pressedBrightness - (int) f6);
+                            if (this.currentBrightness > 100) {
+                                this.currentBrightness = 100;
                             }
-                            if (this.dangqianliangdu < 7) {
-                                this.dangqianliangdu = 7;
+                            if (this.currentBrightness < 7) {
+                                this.currentBrightness = 7;
                             }
                             this.tv_info.setVisibility(VISIBLE);
-                            int j = (this.dangqianliangdu - 7) * 100 / 93;
+                            int j = (this.currentBrightness - 7) * 100 / 93;
                             this.tv_info.setText("亮度：" + j + "%");
 
-                            setBrightness(this.dangqianliangdu);
+                            setBrightness(this.currentBrightness);
                             break;
                         case 4:
-                            float f7 = (y - this.huadongzongzuobiao) * 100.0F / this.height;
+                            float f7 = (y - this.movedY) * 100.0F / this.height;
 
-                            this.dangqianyinliang = (this.anxiayinliang - (int) f7);
-                            if (this.dangqianyinliang > this.zuidayinliang) {
-                                this.dangqianyinliang = this.zuidayinliang;
+                            int currentVolumeM = (this.pressedVolume - (int) f7);
+                            if (currentVolumeM > this.maxVolume) {
+                                currentVolumeM = this.maxVolume;
                             }
-                            if (this.dangqianyinliang < 0) {
-                                this.dangqianyinliang = 0;
+                            if (currentVolumeM < 0) {
+                                currentVolumeM = 0;
                             }
                             this.tv_info.setVisibility(VISIBLE);
-                            int k = this.dangqianyinliang * 100 / this.zuidayinliang;
+                            int k = currentVolumeM * 100 / this.maxVolume;
                             this.tv_info.setText("音量：" + k + "%");
-                            int m = this.dangqianyinliang / 6;
+                            int m = currentVolumeM / 6;
                             this.audioManager.setStreamVolume(3, m, 0);
                             break;
                         default:
@@ -579,7 +533,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
 
 
     private void onClickEmptyArea() {
-        if (suoding) {
+        if (locker) {
             if (lock.getVisibility() != VISIBLE) {
                 lock.setVisibility(VISIBLE);
                 Animation animation3 = AnimationUtils.loadAnimation(AplayerActivity.this, R.anim.anim_left_in);
@@ -628,81 +582,19 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         WindowManager.LayoutParams localLayoutParams = this.getWindow().getAttributes();
         localLayoutParams.screenBrightness = (1.0F * paramInt / 100.0F);
         this.getWindow().setAttributes(localLayoutParams);
-        this.dangqianliangdu = paramInt;
+        this.currentBrightness = paramInt;
     }
 
 
-/*    private BatteryReceiver batteryReceiver;*/
-
- /*   private TextView dianliangTextView;
-    private TextView dianliangTextView2;
-    private LinearLayout dianliangTextView3;
-
-    public void initBatteryReceiver() {
-        this.dianliangTextView = (TextView) findViewById(R.id.dianliang);
-        this.dianliangTextView2 = (TextView) findViewById(R.id.dianliang2);
-        this.dianliangTextView3 = (LinearLayout) findViewById(R.id.dianliang3);
-
-        this.batteryReceiver = new BatteryReceiver();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("android.intent.action.BATTERY_CHANGED");
-        intentFilter.addAction("android.intent.action.NEW_OUTGOING_CALL");
-        registerReceiver(this.batteryReceiver, intentFilter);
-    }
-
-
-    public class BatteryReceiver extends BroadcastReceiver {
-        public void onReceive(Context context, @NonNull Intent intent) {
-            String action = intent.getAction();
-            if (action != null) {
-                if (action.equals("android.intent.action.BATTERY_CHANGED")) {
-                    batteryStateChanged(intent.getIntExtra("status", 0), intent.getIntExtra("level", 0), intent.getIntExtra("temperature", 0));
-                }
-            }
-        }
-    }
-
-
-    private void batteryStateChanged(int i, int i2, int i3) {
-        if (i2 > 10) {
-            this.dianliangTextView2.setBackgroundColor(Color.parseColor("#ffffff"));
-            this.dianliangTextView3.setBackgroundResource(R.drawable.play_ctrl_battery);
-        } else {
-            this.dianliangTextView2.setBackgroundColor(Color.parseColor("#FF0000"));
-            this.dianliangTextView3.setBackgroundResource(R.drawable.play_ctrl_battery1);
-        }
-        if (i == 2) {
-            this.dianliangTextView3.setBackgroundResource(R.drawable.play_ctrl_battery2);
-            i2 = 1;
-        }
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(-1, -1);
-        layoutParams.weight = quzhi(i2);
-        this.dianliangTextView.setLayoutParams(layoutParams);
-    }
-
-
-    public float quzhi(int i) {
-        double d = (double) i;
-        if (i > 99) {
-            d = 99.0d;
-        }
-        if (i < 1) {
-            d = 1.0d;
-        }
-        d = 1.0d - (d / 100.0d);
-        return ((float) ((100.0d - (100.0d * d)) / d));
-    }
-
-*/
     /**
      * 隐藏虚拟按键，并且全屏
      */
     protected void hideBottomUIMenu() {
         /* 隐藏虚拟按键，并且全屏 */
-        if (Build.VERSION.SDK_INT > 11 && Build.VERSION.SDK_INT < 19) {
+        if (Build.VERSION.SDK_INT < 19) {
             View v = this.getWindow().getDecorView();
             v.setSystemUiVisibility(GONE);
-        } else if (Build.VERSION.SDK_INT >= 19) {
+        } else {
             View decorView = getWindow().getDecorView();
             int uiOptions = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_FULLSCREEN;
             decorView.setSystemUiVisibility(uiOptions);
@@ -735,30 +627,18 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     }
 
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    private void finishPlay(){
-        /*if (batteryReceiver != null) {
-            unregisterReceiver(batteryReceiver);
-        }*/
-        if (url != null) {
-            if (!isLive) {
-                com.test.player.PlayerDataBaseHelper.addPlayerInfo(url, aPlayer.getPosition());
-            }
+    private void finishPlay() {
+        if (url != null && !isLive) {
+            PlayerDataBaseHelper.addPlayerInfo(url, aPlayer.getPosition());
         }
         aPlayer.close();
         aPlayer.destroy();
-        setResult(38438);
+        setResult(resultCode);
         finish();
     }
+
     private boolean isPlay(int status) {
-        if (APlayerAndroid.PlayerState.APLAYER_PLAY == status || APlayerAndroid.PlayerState.APLAYER_PLAYING == status) {
-            return (true);
-        }
-        return (false);
+        return APlayerAndroid.PlayerState.APLAYER_PLAY == status || APlayerAndroid.PlayerState.APLAYER_PLAYING == status;
     }
 
     @Override

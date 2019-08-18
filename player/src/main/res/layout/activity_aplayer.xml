@@ -55,24 +55,6 @@
             android:textColor="@android:color/white"
             android:textSize="@dimen/sp_15" />
 
-        <android.widget.ImageView
-            android:id="@+id/v_set"
-            android:layout_width="@dimen/dp_50"
-            android:layout_height="@dimen/dp_50"
-            android:clickable="true"
-            android:focusable="true"
-            android:scaleType="centerInside"
-            android:src="@drawable/v_play_settings"
-            android:tint="@android:color/white"
-            android:visibility="gone" />
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/dp_50"
-            android:adjustViewBounds="true"
-            android:scaleType="centerInside"
-            android:src="@drawable/bd_speed_rate_1_0"
-            android:visibility="gone"/>
 
         <TextClock
             android:padding="@dimen/dp_10"
@@ -89,42 +71,6 @@
             android:textColor="@android:color/white"
             android:textSize="@dimen/sp_14"
             android:textStyle="normal" />
-
-        <FrameLayout
-            android:layout_width="@dimen/dp_50"
-            android:layout_height="@dimen/dp_50"
-            android:visibility="gone">
-
-            <LinearLayout
-                android:layout_width="@dimen/dp_24"
-                android:layout_height="@dimen/dp_13"
-                android:layout_gravity="center"
-                android:orientation="horizontal"
-                android:paddingLeft="@dimen/dp_1">
-
-                <TextView
-                    android:id="@+id/dianliang"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="9900" />
-
-                <TextView
-                    android:id="@+id/dianliang2"
-                    android:layout_width="fill_parent"
-                    android:layout_height="fill_parent"
-                    android:layout_weight="100"
-                    android:background="#ffffff" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/dianliang3"
-                android:layout_width="@dimen/dp_24"
-                android:layout_height="@dimen/dp_13"
-                android:layout_gravity="center"
-                android:background="@drawable/play_ctrl_battery"
-                android:orientation="horizontal"
-                android:paddingLeft="@dimen/dp_1" />
-        </FrameLayout>
     </LinearLayout>
 
     <include
