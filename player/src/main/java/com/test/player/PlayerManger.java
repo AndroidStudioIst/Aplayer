@@ -7,27 +7,38 @@ import android.database.sqlite.SQLiteDatabase;
 import java.io.File;
 import java.io.IOException;
 
-public class PlayerDataBaseHelper {
-    private static SQLiteDatabase db;
+public class PlayerManger {
+    private static PlayerManger instance;
+    private static SQLiteDatabase database;
     private static final String CREAT_POSITION_TABLE = "CREATE TABLE IF NOT EXISTS Player ( id integer PRIMARY KEY,Url text,Position integer)";
 
-    public static void openDataBase(Context context) {
-        if (db != null) {
+    public static PlayerManger getInstance(Context context) {
+        if (instance == null) {
+            instance = new PlayerManger();
+        }
+        if (database == null) {
+            openDataBase(context);
+        }
+        return instance;
+    }
+
+    private static void openDataBase(Context context) {
+        if (database != null) {
             return;
         }
         creatDataBase(context);
-        File file = new File(getDataBasePath(context) + "/player.db");
+        File file = new File(getDataBasePath(context) + "/aplayer.db");
         if (file.exists()) {
-            db = context.openOrCreateDatabase(getDataBasePath(context) + "/player.db", 0, null);
+            database = context.openOrCreateDatabase(getDataBasePath(context) + "/aplayer.db", 0, null);
         }
         craetTable();
     }
 
     private static void creatDataBase(Context context) {
-        File f = new File(getDataBasePath(context) + "/player.db");
-        if (!f.exists()) {
+        File file = new File(getDataBasePath(context) + "/aplayer.db");
+        if (!file.exists()) {
             try {
-                f.createNewFile();
+                file.createNewFile();
             } catch (IOException ioex) {
                 ioex.printStackTrace();
             }
@@ -35,8 +46,8 @@ public class PlayerDataBaseHelper {
     }
 
     private static void craetTable() {
-        if (db != null) {
-            db.execSQL(CREAT_POSITION_TABLE);
+        if (database != null) {
+            database.execSQL(CREAT_POSITION_TABLE);
         }
     }
 
@@ -55,22 +66,22 @@ public class PlayerDataBaseHelper {
     }
 
 
-    public static void addPlayerInfo(String url, int position) {
+    public void addPlayerInfo(String url, int position) {
         url = Integer.toString(url.hashCode());
-        if (db != null) {
+        if (database != null) {
             if (isExistsInfo(url)) {
-                db.execSQL("UPDATE Player SET Position = " + position + " WHERE Url = '" + url + "'");
+                database.execSQL("UPDATE Player SET Position = " + position + " WHERE Url = '" + url + "'");
             } else {
-                db.execSQL("INSERT INTO Player VALUES (" + "null,'" + url + "'," + position + ")");
+                database.execSQL("INSERT INTO Player VALUES (" + "null,'" + url + "'," + position + ")");
             }
         }
     }
 
-    public static boolean isExistsInfo(String url) {
+    private static boolean isExistsInfo(String url) {
         url = Integer.toString(url.hashCode());
         int count = 0;
-        if (db != null) {
-            Cursor cursor = db.rawQuery("SELECT count(*) FROM Player WHERE Url = '" + url + "'", null);
+        if (database != null) {
+            Cursor cursor = database.rawQuery("SELECT count(*) FROM Player WHERE Url = '" + url + "'", null);
             if (cursor.moveToNext()) {
                 count = cursor.getInt(0);
             }
@@ -80,12 +91,12 @@ public class PlayerDataBaseHelper {
     }
 
 
-    public static int getPosition(String url) {
+    public int getPosition(String url) {
         url = Integer.toString(url.hashCode());
         int count = 0;
         try {
-            if (db != null) {
-                Cursor cursor = db.rawQuery("SELECT Position FROM Player WHERE Url = '" + url + "'", null);
+            if (database != null) {
+                Cursor cursor = database.rawQuery("SELECT Position FROM Player WHERE Url = '" + url + "'", null);
                 if (cursor.moveToNext()) {
                     count = cursor.getInt(0);
                 }
@@ -97,23 +108,23 @@ public class PlayerDataBaseHelper {
         return count;
     }
 
-    public static void deleteInfo(String url) {
+    public void deleteInfo(String url) {
         url = Integer.toString(url.hashCode());
-        if (db != null) {
-            db.execSQL("DELETE FROM Player WHERE Url = '" + url + "'");
+        if (database != null) {
+            database.execSQL("DELETE FROM Player WHERE Url = '" + url + "'");
         }
     }
 
     public static void clearTable() {
-        if (db != null) {
-            db.execSQL("delete from Player");
+        if (database != null) {
+            database.execSQL("delete from Player");
             // db.execSQL("delete from TaskIndex");
         }
     }
 
     public static void closeDataBase() {
-        if (db != null) {
-            db.close();
+        if (database != null) {
+            database.close();
         }
     }
 }

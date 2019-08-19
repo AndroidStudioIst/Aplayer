@@ -84,9 +84,8 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_aplayer);
-        PlayerDataBaseHelper.openDataBase(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        initAplayer();
+        initAPlayer();
         hideBottomUIMenu();
         Intent intent = getIntent();
         resultCode = getIntent().getIntExtra("resultCode", -1);
@@ -94,11 +93,13 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         url = intent.getStringExtra("url");
         isLive = intent.getBooleanExtra("isLive", false);
         showToast = intent.getBooleanExtra("showToast", false);
+
+        aPlayer.setConfig(APlayerAndroid.CONFIGID.HTTP_USER_AHTTP2, "1");
         aPlayer.open(url);
     }
 
 
-    private void initAplayer() {
+    private void initAPlayer() {
         holderView = findViewById(R.id.holderView);
         header_bar = findViewById(R.id.header_bar);
         ctrl_bar = findViewById(R.id.ctrl_bar);
@@ -112,7 +113,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         ratate.setOnClickListener(this);
         lock = findViewById(R.id.v_player_lock);
         lock.setOnClickListener(this);
-        ProgressBar cachingProgressBar = findViewById(R.id.loading);
         cachingProgressHint = findViewById(R.id.loading_text);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -153,7 +153,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
             switch (s) {
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_COMPLETE:
                     if (!isLive) {
-                        PlayerDataBaseHelper.deleteInfo(url);
+                        PlayerManger.getInstance(this).deleteInfo(url);
                     }
                     url = null;
                     finishPlay();
@@ -163,12 +163,12 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_OPENRROR:
                     if (showToast) {
-                        Toast.makeText(AplayerActivity.this, "文件打开失败!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AplayerActivity.this, "视频打开失败!", Toast.LENGTH_LONG).show();
                     }
                     break;
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_DECODEERROR:
                     if (showToast) {
-                        Toast.makeText(AplayerActivity.this, "文件解码失败!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AplayerActivity.this, "视频解码失败!", Toast.LENGTH_LONG).show();
                     }
                     break;
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_HARDDECODERROR:
@@ -178,7 +178,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_SEEKERROR:
                     if (showToast) {
-                        Toast.makeText(AplayerActivity.this, "文件Seek失败!", Toast.LENGTH_LONG).show();
+                        Toast.makeText(AplayerActivity.this, "视频Seek失败!", Toast.LENGTH_LONG).show();
                     }
                     break;
                 case APlayerAndroid.PlayCompleteRet.PLAYRE_RESULT_READEFRAMERROR:
@@ -225,7 +225,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                     break;
                 case APlayerAndroid.PlayerState.APLAYER_PLAYING:
                     if (!isLive) {
-                        int position = PlayerDataBaseHelper.getPosition(url);
+                        int position = PlayerManger.getInstance(this).getPosition(url);
                         if (position > 0) {
                             aPlayer.setPosition(position);
                         }
@@ -270,7 +270,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         mainUIHandler = new MyHandler(this);
     }
 
-
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.v_play) {
@@ -310,7 +309,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-
     private void hideCtrlBar() {
         Animation animation = AnimationUtils.loadAnimation(AplayerActivity.this, R.anim.anim_top_out);
         header_bar.startAnimation(animation);
@@ -325,7 +323,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         ratate.startAnimation(animation2);
         ratate.setVisibility(GONE);
     }
-
 
     static class MyHandler extends Handler {
         WeakReference<AplayerActivity> mActivity;
@@ -362,12 +359,10 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-
     private void stopUIUpdateThread() {
         mIsNeedUpdateUIProgress = false;
         mUpdateThread = null;
     }
-
 
     private class UpdatePlayUIProcess implements Runnable {
         @Override
@@ -392,7 +387,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-
     private static String updateTextViewWithTimeFormat(int i) {
         int i2 = (i % 3600) / 60;
         int i3 = i % 60;
@@ -404,12 +398,10 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         return format;
     }
 
-
     private boolean isOverSeekGate(int seekBarPositionMs, int currentPlayPosMs) {
         final int SEEK_MIN_GATE_MS = 1000;
         return Math.abs(currentPlayPosMs - seekBarPositionMs) > SEEK_MIN_GATE_MS;
     }
-
 
     private void userSeekPlayProgress(int seekPostionMs, int max) {
         int currentPlayPos = aPlayer.getPosition();
@@ -425,7 +417,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         tv_info.setVisibility(VISIBLE);
         aPlayer.setPosition(seekPostionMs * 1000);
     }
-
 
     @Override
     public boolean onTouchEvent(MotionEvent motionEvent) {
@@ -531,7 +522,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         return (true);
     }
 
-
     private void onClickEmptyArea() {
         if (locker) {
             if (lock.getVisibility() != VISIBLE) {
@@ -553,7 +543,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-
     private void showBars() {
         header_bar.setVisibility(VISIBLE);
         Animation animation = AnimationUtils.loadAnimation(AplayerActivity.this, R.anim.anim_top_in);
@@ -571,7 +560,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         ratate.startAnimation(animation2);
     }
 
-
     public void setBrightness(int paramInt) {
         if (paramInt < 0) {
             paramInt = 0;
@@ -584,7 +572,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         this.getWindow().setAttributes(localLayoutParams);
         this.currentBrightness = paramInt;
     }
-
 
     /**
      * 隐藏虚拟按键，并且全屏
@@ -601,7 +588,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         }
     }
 
-
     @Override
     protected void onPause() {
         int statue = aPlayer.getState();
@@ -614,7 +600,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         super.onPause();
     }
 
-
     @Override
     protected void onResume() {
         /* 普通播放，后台切换回来，恢复之前的播放状态 */
@@ -626,10 +611,9 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         super.onResume();
     }
 
-
     private void finishPlay() {
         if (url != null && !isLive) {
-            PlayerDataBaseHelper.addPlayerInfo(url, aPlayer.getPosition());
+            PlayerManger.getInstance(this).addPlayerInfo(url, aPlayer.getPosition());
         }
         aPlayer.close();
         aPlayer.destroy();

@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         Log.e("info", "onActivityResult: requestCode->" + requestCode + "|resultCode->" + resultCode);
         if (requestCode == 201) {
-            Toast.makeText(this, "播放完毕", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "播放完毕: " + requestCode, Toast.LENGTH_SHORT).show();
         }
     }
 }

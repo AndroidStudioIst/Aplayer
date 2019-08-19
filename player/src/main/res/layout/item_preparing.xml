@@ -14,10 +14,10 @@
 
         <ProgressBar
             android:id="@+id/loading"
-            android:layout_width="@dimen/dp_30"
-            android:layout_height="@dimen/dp_30"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_gravity="center"
-            android:layout_marginTop="@dimen/dp_5"
+            android:layout_marginTop="5dp"
             android:indeterminateTint="#EC407A" />
 
         <TextView
@@ -25,13 +25,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_margin="@dimen/dp_5"
+            android:layout_margin="5dp"
             android:shadowColor="#000"
             android:shadowDx="0.5"
             android:shadowDy="0.5"
             android:shadowRadius="2"
             android:text="正在打开视频..."
             android:textColor="#FFFFFF"
-            android:textSize="@dimen/sp_14" />
+            android:textSize="14sp" />
     </LinearLayout>
 </LinearLayout>
