@@ -53,8 +53,4 @@ public class FuckPlayer {
             activity.startActivityForResult(intent, resquestCode);
         }
     }
-
-    public interface MyCallBack {
-        void onPlayFinish();
-    }
 }
