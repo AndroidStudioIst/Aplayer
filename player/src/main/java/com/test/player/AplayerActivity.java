@@ -96,6 +96,7 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
 
         aPlayer.setConfig(APlayerAndroid.CONFIGID.HTTP_USER_AHTTP2, "1");
         aPlayer.open(url);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);    /* 强制为横屏 */
     }
 
 
