@@ -94,7 +94,6 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
         isLive = intent.getBooleanExtra("isLive", false);
         showToast = intent.getBooleanExtra("showToast", false);
 
-        aPlayer.setConfig(APlayerAndroid.CONFIGID.HTTP_USER_AHTTP2, "1");
         aPlayer.open(url);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);    /* 强制为横屏 */
     }
@@ -148,6 +147,16 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                 aPlayer.play();
             } else {
                 caching.setVisibility(GONE);
+            }
+        });
+        aPlayer.setOnOpenProgressListener(new APlayerAndroid.OnOpenProgressListener(){
+            @Override
+            public void onOpenProgress(int progress) {
+                super.onOpenProgress(progress);
+                int visibility = (progress == 100) ? View.INVISIBLE : VISIBLE;
+                caching.setVisibility(visibility);
+                String buff = "正在打开视频：" + progress + "%";
+                cachingProgressHint.setText(buff);
             }
         });
         aPlayer.setOnPlayCompleteListener(s -> {
@@ -207,10 +216,10 @@ public class AplayerActivity extends AppCompatActivity implements View.OnClickLi
                     caching.setVisibility(VISIBLE);
                     cachingProgressHint.setText("正在关闭...");
                     break;
-                case APlayerAndroid.PlayerState.APLAYER_OPENING:
+               /* case APlayerAndroid.PlayerState.APLAYER_OPENING:
                     caching.setVisibility(VISIBLE);
                     cachingProgressHint.setText("正在打开视频...");
-                    break;
+                    break;*/
                 case APlayerAndroid.PlayerState.APLAYER_PAUSED:
                     caching.setVisibility(GONE);
                     break;
