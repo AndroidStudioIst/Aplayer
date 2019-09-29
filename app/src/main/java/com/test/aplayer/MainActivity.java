@@ -28,16 +28,16 @@ public class MainActivity extends AppCompatActivity {
             //new APlayer(MainActivity.this).setTitle("测试视频").setUrl("/storage/emulated/0/Pictures/ydcs.mkv").setRequestCode(201).start();
             Log.e("info", "bitmap: start" );
             new Thumbnailer()
-                    .with("/storage/emulated/0/Pictures/ydcs.mkv")
+                    .with(this,"/storage/emulated/0/Pictures/ydcs.mkv")
                     .setCount(6)
                     .setOnThumbParseFinishListener(list -> {
                         for (int i = 0; i < list.size(); i++) {
-                            Log.e("info", "bitmap: " + list.get(i).bitMap.getByteCount());
+                            Log.e("info", "bitmap: " + list.get(i).getUri());
                         }
                         Log.e("info", "bitmap: ok" );
                     })
                     .setOnInfoParseFinishListener(list -> {
-                        Glide.with(this).load(list.bitMap).into(src_over);
+                        Glide.with(this).load(list.getUri()).into(src_over);
                     })
                     .start();
         });
