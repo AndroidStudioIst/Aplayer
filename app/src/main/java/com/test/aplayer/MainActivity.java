@@ -29,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("info", "bitmap: start" );
             new Thumbnailer()
                     .with(this,"/storage/emulated/0/Pictures/ydcs.mkv")
-                    .setCount(6)
+                    .setCount(100)
                     .setOnThumbParseFinishListener(list -> {
                         for (int i = 0; i < list.size(); i++) {
                             Log.e("info", "bitmap: " + list.get(i).getUri());

@@ -49,11 +49,17 @@ public class Thumbnailer {
                 Log.e("thumber", "start: " + mediaInfo.duration_ms);
                 for (int i = 0; i < count; i++) {
                     long timeMs = (long) (i * fix);
-                    APlayerAndroid.MediaInfo info = APlayerAndroid.parseThumbnail(mediaPath, timeMs, -1, -1);
-                    Log.e("thumber", "get -> timeMs: " + timeMs + " position: " + i);
-                    saveBitmapToLocal(Integer.toString(mediaPath.hashCode()) + i + ".jpg", info.bitMap);
                     String path = bitMapSavePath + mediaPath.hashCode() + i + ".jpg";
-                    MyMediaInfo myMediaInfo = new MyMediaInfo(path, info.show_ms);
+                    File srcFile = new File(path);
+                    MyMediaInfo myMediaInfo;
+                    if (srcFile.exists()) {
+                        myMediaInfo = new MyMediaInfo(path, timeMs);
+                    } else {
+                        APlayerAndroid.MediaInfo info = APlayerAndroid.parseThumbnail(mediaPath, timeMs, -1, -1);
+                        Log.e("thumber", "get -> timeMs: " + timeMs + " position: " + i);
+                        saveBitmapToLocal(Integer.toString(mediaPath.hashCode()) + i + ".jpg", info.bitMap);
+                        myMediaInfo = new MyMediaInfo(path, info.show_ms);
+                    }
                     list.add(myMediaInfo);
                     if (onInfoParseFinishListener != null) {
                         new Handler(Looper.getMainLooper()).post(() -> onInfoParseFinishListener.onThumbParseFinish(myMediaInfo));
@@ -84,9 +90,9 @@ public class Thumbnailer {
     }
 
 
-    public  void saveBitmapToLocal( String fileName, Bitmap bitmap) {
+    public void saveBitmapToLocal(String fileName, Bitmap bitmap) {
         try {
-            File filePath = new File(bitMapSavePath+ fileName);
+            File filePath = new File(bitMapSavePath + fileName);
             if (filePath.exists()) {
                 filePath.delete();
             }
@@ -109,9 +115,9 @@ public class Thumbnailer {
         String dataBasePath;
         File dir = context.getExternalCacheDir();
         if (dir != null) {
-            dataBasePath = dir.getAbsolutePath() + File.separator+ "vodSrcCache"+ File.separator;
+            dataBasePath = dir.getAbsolutePath() + File.separator + "vodSrcCache" + File.separator;
         } else {
-            dataBasePath = context.getCacheDir().getAbsolutePath() + File.separator+ "vodSrcCache"+ File.separator;
+            dataBasePath = context.getCacheDir().getAbsolutePath() + File.separator + "vodSrcCache" + File.separator;
         }
         if (!new File(dataBasePath).exists()) {
             new File(dataBasePath).mkdirs();
