@@ -46,7 +46,6 @@ public class Thumbnailer {
             try {
                 APlayerAndroid.MediaInfo mediaInfo = APlayerAndroid.parseThumbnail(mediaPath);
                 double fix = mediaInfo.duration_ms / count;
-                Log.e("thumber", "start: " + mediaInfo.duration_ms);
                 for (int i = 0; i < count; i++) {
                     long timeMs = (long) (i * fix);
                     String path = bitMapSavePath + mediaPath.hashCode() + i + ".jpg";
@@ -56,7 +55,6 @@ public class Thumbnailer {
                         myMediaInfo = new MyMediaInfo(path, timeMs);
                     } else {
                         APlayerAndroid.MediaInfo info = APlayerAndroid.parseThumbnail(mediaPath, timeMs, -1, -1);
-                        Log.e("thumber", "get -> timeMs: " + timeMs + " position: " + i);
                         saveBitmapToLocal(Integer.toString(mediaPath.hashCode()) + i + ".jpg", info.bitMap);
                         myMediaInfo = new MyMediaInfo(path, info.show_ms);
                     }
@@ -68,8 +66,6 @@ public class Thumbnailer {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            Log.e("thumber", "ok");
             if (onThumbParseFinishListener != null) {
                 new Handler(Looper.getMainLooper()).post(() -> onThumbParseFinishListener.onThumbParseFinish(list));
             }
