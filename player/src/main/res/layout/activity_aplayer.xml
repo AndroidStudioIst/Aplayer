@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000"
-    tools:context="com.test.player.AplayerActivity">
+    tools:context="com.test.player.com.walixiwa.player.APlayerActivity">
 
     <SurfaceView
         android:id="@+id/holderView"
@@ -165,20 +165,6 @@
         android:textStyle="bold"
         android:visibility="gone" />
 
-    <android.widget.ImageView
-        android:id="@+id/v_play_large"
-        android:layout_width="60dp"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:adjustViewBounds="true"
-        android:alpha="0.7"
-        android:background="@null"
-        android:clickable="true"
-        android:focusable="true"
-        android:scaleType="centerInside"
-        android:src="@drawable/v_play_large"
-        android:tint="@android:color/white"
-        tools:visibility="gone" />
 
 
     <android.widget.ImageView

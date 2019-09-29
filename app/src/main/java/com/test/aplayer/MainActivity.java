@@ -7,35 +7,42 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.test.player.FuckPlayer;
+import com.bumptech.glide.Glide;
+import com.walixiwa.aplayer.tools.APlayer;
+import com.walixiwa.aplayer.tools.Thumbnailer;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    private EditText title;
-    private EditText url;
+import java.util.List;
 
+public class MainActivity extends AppCompatActivity {
+    private ImageView src_over;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        title = findViewById(R.id.title);
-        url = findViewById(R.id.url);
-        findViewById(R.id.start).setOnClickListener(this);
+        src_over = findViewById(R.id.src_over);
+        findViewById(R.id.start).setOnClickListener(v -> {
+
+            //new APlayer(MainActivity.this).setTitle("测试视频").setUrl("/storage/emulated/0/Pictures/ydcs.mkv").setRequestCode(201).start();
+            Log.e("info", "bitmap: start" );
+            new Thumbnailer()
+                    .with("/storage/emulated/0/Pictures/ydcs.mkv")
+                    .setCount(6)
+                    .setOnThumbParseFinishListener(list -> {
+                        for (int i = 0; i < list.size(); i++) {
+                            Log.e("info", "bitmap: " + list.get(i).bitMap.getByteCount());
+                        }
+                        Log.e("info", "bitmap: ok" );
+                    })
+                    .setOnInfoParseFinishListener(list -> {
+                        Glide.with(this).load(list.bitMap).into(src_over);
+                    })
+                    .start();
+        });
     }
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.start:
-                String name = title.getText().toString();
-                String link = url.getText().toString();
-
-                new FuckPlayer(this).setTitle(name).setUrl(link).setResquestCode(201).start();
-
-                break;
-        }
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
