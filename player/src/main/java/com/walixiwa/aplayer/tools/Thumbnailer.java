@@ -52,11 +52,12 @@ public class Thumbnailer {
                     File srcFile = new File(path);
                     MyMediaInfo myMediaInfo;
                     if (srcFile.exists()) {
-                        srcFile.delete();
+                        myMediaInfo = new MyMediaInfo(path, timeMs);
+                    } else {
+                        APlayerAndroid.MediaInfo info = APlayerAndroid.parseThumbnail(mediaPath, timeMs, -1, -1);
+                        saveBitmapToLocal(Integer.toString(mediaPath.hashCode()) + i + ".jpg", info.bitMap);
+                        myMediaInfo = new MyMediaInfo(path, info.show_ms);
                     }
-                    APlayerAndroid.MediaInfo info = APlayerAndroid.parseThumbnail(mediaPath, timeMs, -1, -1);
-                    saveBitmapToLocal(Integer.toString(mediaPath.hashCode()) + i + ".jpg", info.bitMap);
-                    myMediaInfo = new MyMediaInfo(path, info.show_ms);
                     list.add(myMediaInfo);
                     if (onInfoParseFinishListener != null) {
                         new Handler(Looper.getMainLooper()).post(() -> onInfoParseFinishListener.onThumbParseFinish(myMediaInfo));
