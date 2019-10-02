@@ -145,6 +145,13 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
             if (b) {
                 if (position != 0) {
                     aPlayer.setPosition(position);
+                }else{
+                    if (!isLive) {
+                        int position = PositionManager.getInstance(this).getPosition(url);
+                        if (position > 0) {
+                            aPlayer.setPosition(position);
+                        }
+                    }
                 }
                 aPlayer.play();
             } else {
@@ -223,6 +230,7 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
                     cachingProgressHint.setText("正在打开视频...");
                     break;*/
                 case APlayerAndroid.PlayerState.APLAYER_PAUSED:
+                case APlayerAndroid.PlayerState.APLAYER_PLAYING:
                     caching.setVisibility(GONE);
                     break;
                 case APlayerAndroid.PlayerState.APLAYER_PAUSING:
@@ -232,15 +240,6 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
                 case APlayerAndroid.PlayerState.APLAYER_PLAY:
                 case APlayerAndroid.PlayerState.APLAYER_READ:
                 case APlayerAndroid.PlayerState.APLAYER_RESET:
-                    break;
-                case APlayerAndroid.PlayerState.APLAYER_PLAYING:
-                    if (!isLive) {
-                        int position = PositionManager.getInstance(this).getPosition(url);
-                        if (position > 0) {
-                            aPlayer.setPosition(position);
-                        }
-                    }
-                    caching.setVisibility(GONE);
                     break;
             }
             if (i == APlayerAndroid.PlayerState.APLAYER_PLAYING) {
