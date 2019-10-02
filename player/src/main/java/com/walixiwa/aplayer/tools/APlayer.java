@@ -38,6 +38,10 @@ public class APlayer {
         return this;
     }
 
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
     public void start() {
         Intent intent = new Intent(activity, APlayerActivity.class);
         intent.putExtra("title", title);
