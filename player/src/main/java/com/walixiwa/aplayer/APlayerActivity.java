@@ -79,6 +79,8 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
 
     private boolean showToast = false;
 
+    private int position = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -92,7 +94,7 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
         url = intent.getStringExtra("url");
         isLive = intent.getBooleanExtra("isLive", false);
         showToast = intent.getBooleanExtra("showToast", false);
-
+        position = intent.getIntExtra("position", 0);
         aPlayer.open(url);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);    /* 强制为横屏 */
     }
@@ -141,12 +143,15 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
         aPlayer.setView(holderView);
         aPlayer.setOnOpenCompleteListener(b -> {
             if (b) {
+                if (position != 0) {
+                    aPlayer.setPosition(position);
+                }
                 aPlayer.play();
             } else {
                 caching.setVisibility(GONE);
             }
         });
-        aPlayer.setOnOpenProgressListener(new APlayerAndroid.OnOpenProgressListener(){
+        aPlayer.setOnOpenProgressListener(new APlayerAndroid.OnOpenProgressListener() {
             @Override
             public void onOpenProgress(int progress) {
                 super.onOpenProgress(progress);

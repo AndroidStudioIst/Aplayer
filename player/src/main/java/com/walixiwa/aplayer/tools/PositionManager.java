@@ -41,13 +41,7 @@ public class PositionManager {
 
 
     private static String getDataBasePath(Context context) {
-        String dataBasePath;
-        File dir = context.getExternalCacheDir();
-        if (dir != null) {
-            dataBasePath = dir.getAbsolutePath() + "/database";
-        } else {
-            dataBasePath = context.getCacheDir().getAbsolutePath() + "/database";
-        }
+        String dataBasePath = context.getFilesDir().getAbsolutePath() + "/database";
         if (!new File(dataBasePath).exists()) {
             new File(dataBasePath).mkdirs();
         }
@@ -55,7 +49,7 @@ public class PositionManager {
     }
 
 
-    public  void addPosition(String url, int position) {
+    public void addPosition(String url, int position) {
         url = Integer.toString(url.hashCode());
         if (database != null) {
             if (isExists(url)) {
@@ -80,7 +74,7 @@ public class PositionManager {
     }
 
 
-    public  int getPosition(String url) {
+    public int getPosition(String url) {
         url = Integer.toString(url.hashCode());
         int count = 0;
         try {
@@ -97,21 +91,21 @@ public class PositionManager {
         return count;
     }
 
-    public  void delete(String url) {
+    public void delete(String url) {
         url = Integer.toString(url.hashCode());
         if (database != null) {
             database.execSQL("DELETE FROM Player WHERE Url = '" + url + "'");
         }
     }
 
-    public  void clear() {
+    public void clear() {
         if (database != null) {
             database.execSQL("delete from Player");
             // db.execSQL("delete from TaskIndex");
         }
     }
 
-    public  void close() {
+    public void close() {
         if (database != null) {
             database.close();
         }

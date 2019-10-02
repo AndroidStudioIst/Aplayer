@@ -11,6 +11,7 @@ public class APlayer {
     private Activity activity;
     private boolean isLive = false;
     private int requestCode = -1;
+    private int position = 0;
 
     public APlayer(Activity activity) {
         this.activity = activity;
@@ -42,6 +43,7 @@ public class APlayer {
         intent.putExtra("title", title);
         intent.putExtra("url", url);
         intent.putExtra("isLive", isLive);
+        intent.putExtra("position", position);
         if (requestCode == -1) {
             activity.startActivity(intent);
         } else {
