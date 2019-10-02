@@ -38,8 +38,9 @@ public class APlayer {
         return this;
     }
 
-    public void setPosition(int position) {
+    public APlayer setPosition(int position) {
         this.position = position;
+        return this;
     }
 
     public void start() {
