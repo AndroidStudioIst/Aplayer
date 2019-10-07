@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -143,13 +144,13 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
         aPlayer.setView(holderView);
         aPlayer.setOnOpenCompleteListener(b -> {
             if (b) {
-                if (position != 0) {
+                if (position > 0) {
                     aPlayer.setPosition(position);
-                }else{
+                } else {
                     if (!isLive) {
-                        int position = PositionManager.getInstance(this).getPosition(url);
-                        if (position > 0) {
-                            aPlayer.setPosition(position);
+                        int posix = PositionManager.getInstance(this).getPosition(url);
+                        if (posix > 0) {
+                            aPlayer.setPosition(posix);
                         }
                     }
                 }
@@ -600,7 +601,7 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
             aPlayer.pause();
             mIsSystemCallPause = true;
         }
-        if (url != null && !isLive) {
+        if (!TextUtils.isEmpty(url) && !isLive) {
             PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
         }
         /* 让播放进度UI更新线程退出 */
@@ -620,7 +621,7 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     private void finishPlay() {
-        if (url != null && !isLive) {
+        if (!TextUtils.isEmpty(url) && !isLive) {
             PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
         }
         aPlayer.close();
@@ -640,5 +641,13 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         this.width = displayMetrics.widthPixels;
         this.height = displayMetrics.heightPixels;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (aPlayer != null && !TextUtils.isEmpty(url) && !isLive) {
+            PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
+        }
     }
 }
