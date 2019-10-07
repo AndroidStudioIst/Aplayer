@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
         src_over = findViewById(R.id.src_over);
         findViewById(R.id.start).setOnClickListener(v -> {
 
-            new APlayer(MainActivity.this).setTitle("蜘蛛侠：英雄远征").setUrl("http://okzy.xzokzyzy.com/20190912/14950_e222f712/YXYZ.2019.1080P.英语中字.mp4").setRequestCode(201).start();
+            new APlayer(MainActivity.this).setTitle("蜘蛛侠：英雄远征").setUrl("/storage/emulated/0/资源鼠/download//8F87D27385AE45B528272B0DBCD25460298F1428/1/[BT乐园·bt606.com]钢铁侠2.Iron.Man.2.BD720P.X264.AAC.国英双语.中英字幕.mkv").setRequestCode(201).start();
            /* Log.e("info", "bitmap: start" );
             new Thumbnailer()
                     .with(this,"/storage/emulated/0/Pictures/ydcs.mkv")

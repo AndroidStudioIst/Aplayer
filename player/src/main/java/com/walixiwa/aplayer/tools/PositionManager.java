@@ -3,6 +3,7 @@ package com.walixiwa.aplayer.tools;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,19 +50,20 @@ public class PositionManager {
     }
 
 
-    public void addPosition(String url, int position) {
+    public void setPosition(String url, int position) {
         url = Integer.toString(url.hashCode());
         if (database != null) {
             if (isExists(url)) {
                 database.execSQL("UPDATE Player SET Position = " + position + " WHERE Url = '" + url + "'");
+                Log.e("APlayer", "setPosition: update position - > " + "UPDATE Player SET Position = " + position + " WHERE Url = '" + url + "'");
             } else {
                 database.execSQL("INSERT INTO Player VALUES (" + "null,'" + url + "'," + position + ")");
+                Log.e("APlayer", "setPosition: insert position - > " + "INSERT INTO Player VALUES (" + "null,'" + url + "'," + position + ")");
             }
         }
     }
 
-    public static boolean isExists(String url) {
-        url = Integer.toString(url.hashCode());
+    private static boolean isExists(String url) {
         int count = 0;
         if (database != null) {
             Cursor cursor = database.rawQuery("SELECT count(*) FROM Player WHERE Url = '" + url + "'", null);

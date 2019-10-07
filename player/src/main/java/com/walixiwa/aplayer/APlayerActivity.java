@@ -601,9 +601,7 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
             aPlayer.pause();
             mIsSystemCallPause = true;
         }
-        if (!TextUtils.isEmpty(url) && !isLive) {
-            PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
-        }
+
         /* 让播放进度UI更新线程退出 */
         stopUIUpdateThread();
         super.onPause();
@@ -622,7 +620,10 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
 
     private void finishPlay() {
         if (!TextUtils.isEmpty(url) && !isLive) {
-            PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
+            int statue = aPlayer.getState();
+            if (isPlay(statue)) {
+                PositionManager.getInstance(this).setPosition(url, aPlayer.getPosition());
+            }
         }
         aPlayer.close();
         aPlayer.destroy();
@@ -643,11 +644,4 @@ public class APlayerActivity extends AppCompatActivity implements View.OnClickLi
         this.height = displayMetrics.heightPixels;
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (aPlayer != null && !TextUtils.isEmpty(url) && !isLive) {
-            PositionManager.getInstance(this).addPosition(url, aPlayer.getPosition());
-        }
-    }
 }
