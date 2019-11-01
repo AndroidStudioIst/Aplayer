@@ -14,13 +14,14 @@ allprojects {
 
 ```java
 dependencies {
- implementation 'com.github.W252016021:Aplayer:1.0.0'
+ implementation 'com.github.W252016021:Aplayer:1.2.0'
 }
 ```
 ##### 调用播放:
 
 ```java
-new FuckPlayer(this).setTitle(name).setUrl(link).setResquestCode(201).start();//201用于回调播放完成事件，可空
+new APlayer(this).setTitle(fileModel.getFileName()).setUrl(fileModel.getFilePath()).setResquestCode(201).start();
+//201用于回调播放完成事件，可空
 
 @Override
 protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
